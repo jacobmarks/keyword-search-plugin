@@ -1,0 +1,8 @@
+fiftyone:
+  version: "~0.21.0"
+name: "@jacobmarks/keyword_search"
+version: "1.0.0"
+description: "Perform keyword search on a specified field"
+url: "https://github.com/jacobmarks/keyword-search-plugin/blob/main/README.md"
+operators:
+  - search_by_keyword
