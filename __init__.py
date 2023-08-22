@@ -16,9 +16,18 @@ import fiftyone.operators as foo
 from fiftyone.operators import types
 from fiftyone import ViewField as F
 
-with add_sys_path(os.path.dirname(os.path.abspath(__file__))):
-    # pylint: disable=no-name-in-module,import-error
-    from cache_manager import get_cache 
+
+def _is_teams_deployment():
+    val = os.environ.get("FIFTYONE_INTERNAL_SERVICE", "")
+    return val.lower() in ("true", "1")
+
+
+TEAMS_DEPLOYMENT = _is_teams_deployment()
+
+if not TEAMS_DEPLOYMENT:
+    with add_sys_path(os.path.dirname(os.path.abspath(__file__))):
+        # pylint: disable=no-name-in-module,import-error
+        from cache_manager import get_cache 
 
 def serialize_view(view):
     return json.loads(json_util.dumps(view._serialize()))
@@ -64,9 +73,12 @@ class KeywordSearch(foo.Operator):
 
         string_fields = get_string_fields(ctx.dataset)
 
-        cache = get_cache()
-        if "field" in cache:
-            default_field = cache["field"]
+        if not TEAMS_DEPLOYMENT:
+            cache = get_cache()
+            if "field" in cache:
+                default_field = cache["field"]
+            else:
+                default_field = string_fields[0]
         else:
             default_field = string_fields[0]
 
