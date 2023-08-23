@@ -27,7 +27,8 @@ TEAMS_DEPLOYMENT = _is_teams_deployment()
 if not TEAMS_DEPLOYMENT:
     with add_sys_path(os.path.dirname(os.path.abspath(__file__))):
         # pylint: disable=no-name-in-module,import-error
-        from cache_manager import get_cache 
+        from cache_manager import get_cache
+
 
 def serialize_view(view):
     return json.loads(json_util.dumps(view._serialize()))
@@ -51,11 +52,10 @@ def _is_label_field(dataset, field):
         sample = dataset.first()
         outer_field = field.split(".")[0]
         return "label" in str(type(sample[outer_field]))
-    
+
 
 def _is_list_field(dataset, field):
     return "ListField" in str(type(dataset.get_field_schema(flat=True)[field]))
-
 
 
 def generate_query(dataset, field, keyword, case_sensitive):
@@ -65,24 +65,33 @@ def generate_query(dataset, field, keyword, case_sensitive):
     list_flag = _is_list_field(dataset, field)
 
     if not label_flag and not list_flag:
-        return dataset.match(F(field).contains_str(keyword, case_sensitive=case_sensitive))
+        return dataset.match(
+            F(field).contains_str(keyword, case_sensitive=case_sensitive)
+        )
     elif list_flag and not label_flag:
-        return dataset.match(F(field).join("").contains_str(keyword, case_sensitive=case_sensitive))
+        return dataset.match(
+            F(field)
+            .join("")
+            .contains_str(keyword, case_sensitive=case_sensitive)
+        )
     elif label_flag:
         outer_field = field.split(".")[0]
         inner_field = ".".join(field.split(".")[2:]).strip()
         return dataset.match_labels(
-            filter=F(inner_field).contains_str(keyword, case_sensitive=case_sensitive),
-            fields=outer_field
-            )
+            filter=F(inner_field).contains_str(
+                keyword, case_sensitive=case_sensitive
+            ),
+            fields=outer_field,
+        )
     else:
         outer_field = field.split(".")[0]
         inner_field = ".".join(field.split(".")[2:]).strip()
         return dataset.match_labels(
-            filter=F(inner_field).join("").contains_str(keyword, case_sensitive=case_sensitive),
-            fields=outer_field
-            )
- 
+            filter=F(inner_field)
+            .join("")
+            .contains_str(keyword, case_sensitive=case_sensitive),
+            fields=outer_field,
+        )
 
 
 class KeywordSearch(foo.Operator):
@@ -153,12 +162,11 @@ class KeywordSearch(foo.Operator):
         case_sensitive = ctx.params["case_sensitive"]
         view = generate_query(ctx.dataset, field, keyword, case_sensitive)
         ctx.trigger(
-                "set_view",
-                params=dict(view=serialize_view(view)),
-            )
+            "set_view",
+            params=dict(view=serialize_view(view)),
+        )
         ctx.trigger("reload_dataset")
         return
-
 
 
 def register(plugin):
