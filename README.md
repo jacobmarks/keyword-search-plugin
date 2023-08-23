@@ -24,5 +24,5 @@ fiftyone plugins download https://github.com/jacobmarks/keyword-search-plugin
 **Inputs**:
 
 - `query`: The keyword or keyphrase to search for
-- `field`: The field to search in (from top-level string fields)
+- `field`: The field to search in (any `StringField`)
 - `case_sensitive`: Whether to match case sensitively
