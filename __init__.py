@@ -34,13 +34,55 @@ def serialize_view(view):
 
 
 def get_string_fields(dataset):
-    """Get all top-level string fields in a dataset."""
+    """Get all string fields in a dataset."""
     string_fields = []
     fields = dataset.get_field_schema(flat=True)
     for field, ftype in fields.items():
-        if type(ftype).__name__ == "StringField" and "." not in field:
+        full_type = str(ftype)
+        if "StringField" in full_type:
             string_fields.append(field)
     return string_fields
+
+
+def _is_label_field(dataset, field):
+    if "." not in field:
+        return False
+    else:
+        sample = dataset.first()
+        outer_field = field.split(".")[0]
+        return "label" in str(type(sample[outer_field]))
+    
+
+def _is_list_field(dataset, field):
+    return "ListField" in str(type(dataset.get_field_schema(flat=True)[field]))
+
+
+
+def generate_query(dataset, field, keyword, case_sensitive):
+    """Generate a query for a sample."""
+
+    label_flag = _is_label_field(dataset, field)
+    list_flag = _is_list_field(dataset, field)
+
+    if not label_flag and not list_flag:
+        return dataset.match(F(field).contains_str(keyword, case_sensitive=case_sensitive))
+    elif list_flag and not label_flag:
+        return dataset.match(F(field).join("").contains_str(keyword, case_sensitive=case_sensitive))
+    elif label_flag:
+        outer_field = field.split(".")[0]
+        inner_field = ".".join(field.split(".")[2:]).strip()
+        return dataset.match_labels(
+            filter=F(inner_field).contains_str(keyword, case_sensitive=case_sensitive),
+            fields=outer_field
+            )
+    else:
+        outer_field = field.split(".")[0]
+        inner_field = ".".join(field.split(".")[2:]).strip()
+        return dataset.match_labels(
+            filter=F(inner_field).join("").contains_str(keyword, case_sensitive=case_sensitive),
+            fields=outer_field
+            )
+ 
 
 
 class KeywordSearch(foo.Operator):
@@ -102,14 +144,14 @@ class KeywordSearch(foo.Operator):
         new_default_field = ctx.params.get("search_field", "none")
         get_cache()["field"] = new_default_field
 
-        inputs.str("query", label="Query", required=True)
+        inputs.str("keyword", label="Query", required=True)
         return types.Property(inputs, view=form_view)
 
     def execute(self, ctx):
-        query = ctx.params["query"]
+        keyword = ctx.params["keyword"]
         field = ctx.params["search_field"]
         case_sensitive = ctx.params["case_sensitive"]
-        view = ctx.dataset.match(F(field).contains_str(query, case_sensitive=case_sensitive))
+        view = generate_query(ctx.dataset, field, keyword, case_sensitive)
         ctx.trigger(
                 "set_view",
                 params=dict(view=serialize_view(view)),
