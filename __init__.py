@@ -97,12 +97,13 @@ def generate_query(dataset, field, keyword, case_sensitive):
 class KeywordSearch(foo.Operator):
     @property
     def config(self):
-        return foo.OperatorConfig(
+        _config = foo.OperatorConfig(
             name="search_by_keyword",
             label="Keyword Search: Find samples with keyword",
-            icon="/assets/icon_white.svg",
             dynamic=True,
         )
+        _config.icon = "/assets/icon_white.svg"
+        return _config
 
     def resolve_placement(self, ctx):
         return types.Placement(
