@@ -1,6 +1,7 @@
 ## Keyword Search Plugin
 
-This plugin is a Python plugin that allows you to search through your dataset using keywords.
+This plugin is a Python plugin that allows you to search through your dataset
+using keywords.
 
 It demonstrates how to do the following:
 
