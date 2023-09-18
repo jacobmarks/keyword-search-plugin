@@ -1,5 +1,7 @@
 ## Keyword Search Plugin
 
+![keyword_search](https://github.com/jacobmarks/keyword-search-plugin/assets/12500356/08fcf04d-35c5-45e5-b950-ba732da26d14)
+
 This plugin is a Python plugin that allows you to search through your dataset
 using keywords.
 
