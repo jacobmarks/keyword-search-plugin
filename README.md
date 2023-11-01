@@ -5,12 +5,8 @@
 This plugin is a Python plugin that allows you to search through your dataset
 using keywords.
 
-It demonstrates how to do the following:
-
-- Cache user choices in a Python plugin
-- Use `ctx.dataset` in `resolve_input()` to access the dataset
-- Set an icon for operators in the operator list
-- Place operators in the action menu from Python
+## Watch On Youtube
+[![Video Thumbnail](https://img.youtube.com/vi/jnNPGrM6Wr4/0.jpg)](https://www.youtube.com/watch?v=jnNPGrM6Wr4&list=PLuREAXoPgT0RZrUaT0UpX_HzwKkoB-S9j&index=6)
 
 ## Installation
 
