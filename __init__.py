@@ -24,6 +24,7 @@ def _is_teams_deployment():
 
 TEAMS_DEPLOYMENT = _is_teams_deployment()
 
+
 if not TEAMS_DEPLOYMENT:
     with add_sys_path(os.path.dirname(os.path.abspath(__file__))):
         # pylint: disable=no-name-in-module,import-error
@@ -151,8 +152,10 @@ class KeywordSearch(foo.Operator):
             default=False,
         )
 
-        new_default_field = ctx.params.get("search_field", "none")
-        get_cache()["field"] = new_default_field
+        new_default_field = ctx.params.get("search_field", default_field)
+
+        if not TEAMS_DEPLOYMENT:
+            get_cache()["field"] = new_default_field
 
         inputs.str("keyword", label="Query", required=True)
         return types.Property(inputs, view=form_view)
