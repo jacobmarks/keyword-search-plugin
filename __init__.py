@@ -5,10 +5,7 @@
 |
 """
 
-import json
 import os
-
-from bson import json_util
 
 import fiftyone as fo
 from fiftyone.core.utils import add_sys_path
@@ -29,10 +26,6 @@ if not TEAMS_DEPLOYMENT:
     with add_sys_path(os.path.dirname(os.path.abspath(__file__))):
         # pylint: disable=no-name-in-module,import-error
         from cache_manager import get_cache
-
-
-def serialize_view(view):
-    return json.loads(json_util.dumps(view._serialize()))
 
 
 def get_string_fields(dataset):
@@ -165,11 +158,8 @@ class KeywordSearch(foo.Operator):
         field = ctx.params["search_field"]
         case_sensitive = ctx.params["case_sensitive"]
         view = generate_query(ctx.dataset, field, keyword, case_sensitive)
-        ctx.trigger(
-            "set_view",
-            params=dict(view=serialize_view(view)),
-        )
-        ctx.trigger("reload_dataset")
+        ctx.ops.set_view(view=view)
+        ctx.ops.reload_dataset()
         return
 
 
